@@ -158,7 +158,12 @@ class aclient(discord.Client):
                             response = f"{response}{await responses.official_handle_response(prompt, self)}"
                         elif self.chat_model == "UNOFFICIAL":
                             #response = f"{response}{await responses.unofficial_handle_response(prompt, self)}"
-                            response = "Salut Greg, c'est Bassem jsuis de retour."
+                            response = """
+**--- --- --- --- --- ---  --- --- --- --- --- --- --- --- ---**
+Statut: Opérationnel :white_check_mark:
+> type `/help` for the commands list :pencil: 
+**--- --- --- --- --- ---  --- --- --- --- --- --- --- --- ---**
+"""
                         elif self.chat_model == "Bard":
                             response = f"{response}{await responses.bard_handle_response(prompt, self)}"
                         elif self.chat_model == "Bing":
