@@ -9,6 +9,7 @@ from Bard import Chatbot as BardChatbot
 from revChatGPT.V3 import Chatbot
 from revChatGPT.V1 import AsyncChatbot
 from EdgeGPT import Chatbot as EdgeChatbot
+from datetime import datetime
 
 logger = log.setup_logger(__name__)
 load_dotenv()
@@ -132,7 +133,7 @@ class aclient(discord.Client):
             elif self.is_replying_all == "True":
                 await message.channel.send(response)
             else:
-                await message.followup.send(response)
+                await message.followup.send(f"{response}")
         except Exception as e:
             if self.is_replying_all == "True":
                 await message.channel.send(f"> **ERROR: Something went wrong, please try again later!** \n ```ERROR MESSAGE: {e}```")
@@ -160,7 +161,11 @@ class aclient(discord.Client):
                             embed=discord.Embed(description="Status: Operational ✅", color=0xee2bde)
                             embed.add_field(name="`/help` ", value="for the commands list :pencil:", inline=False)
                             embed.add_field(name="`/chat`", value="to start a prompt :incoming_envelope:", inline=True)
-                            embed.add_field(name="`/reset`", value="to clear my memory :wastebasket:", inline=True)  
+                            embed.add_field(name="`/reset`", value="to clear my memory :wastebasket:", inline=True)
+                            
+                            # Add the footer to the embed
+                            current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+                            embed.set_footer(text=f"{current_time}")  
 
                             channel = self.get_channel(int(discord_channel_id))
                             await channel.send(embed=embed)  # Send the embed message
