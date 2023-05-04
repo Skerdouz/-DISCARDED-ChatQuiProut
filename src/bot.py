@@ -154,7 +154,6 @@ def run_discord_bot():
                 `sda`: Superior DAN has even more freedom in DAN Mode
                 `confidant`: Evil Confidant, evil trusted confidant
                 `based`: BasedGPT v2, sexy GPT
-                `oppo`: OPPO says exact opposite of what ChatGPT would say
                 `dev`: Developer Mode, v2 Developer mode enabled
 
         - `/private` ChatGPT switch to private mode
@@ -212,7 +211,6 @@ def run_discord_bot():
         app_commands.Choice(name="Superior Do Anything", value="sda"),
         app_commands.Choice(name="Evil Confidant", value="confidant"),
         app_commands.Choice(name="BasedGPT v2", value="based"),
-        app_commands.Choice(name="OPPO", value="oppo"),
         app_commands.Choice(name="Developer Mode v2", value="dev"),
         app_commands.Choice(name="DUDE V3", value="dude_v3"),
         app_commands.Choice(name="AIM", value="aim"),

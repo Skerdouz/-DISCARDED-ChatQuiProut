@@ -29,14 +29,14 @@
 ---
 ## Step 2: Official API authentication
 
-### Geanerate an OpenAI API key
+### Generate an OpenAI API key
 1. Go to https://beta.openai.com/account/api-keys
 
 2. Click Create new secret key
 
    ![image](https://user-images.githubusercontent.com/89479282/207970699-2e0cb671-8636-4e27-b1f3-b75d6db9b57e.PNG)
 
-3. Store the SECRET KEY to `.env` under the `OPENAI_API_KEY`
+3. Store the SECRET KEY to `.env` under the `OPENAI_API_KEY` (needed for the draw function)
 
 4. You're all set for [Step 3](#step-3-run-the-bot-on-the-desktop)
 ---
