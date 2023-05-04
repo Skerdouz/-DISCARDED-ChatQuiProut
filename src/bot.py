@@ -5,6 +5,7 @@ from random import randrange
 from src.aclient import client
 from discord import app_commands
 from src import log, art, personas, responses
+from datetime import datetime
 
 logger = log.setup_logger(__name__)
 
@@ -141,35 +142,36 @@ def run_discord_bot():
         logger.warning(
             f"\x1b[31m{client.chat_model} bot has been successfully reset\x1b[0m")
 
-    @client.tree.command(name="help", description="Show help for the bot")
+    @client.tree.command(name="help", description="List bot commands")
     async def help(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
-        await interaction.followup.send(""":star: **BASIC COMMANDS** \n
-        - `/chat [message]` Chat with ChatGPT!
-        - `/draw [prompt]` Generate an image with the Dalle2 model
-        - `/switchpersona [persona]` Switch between optional ChatGPT jailbreaks
-                `random`: Picks a random persona
-                `chatgpt`: Standard ChatGPT mode
-                `dan`: Dan Mode 11.0, infamous Do Anything Now Mode
-                `sda`: Superior DAN has even more freedom in DAN Mode
-                `confidant`: Evil Confidant, evil trusted confidant
-                `based`: BasedGPT v2, sexy GPT
-                `oppo`: OPPO says exact opposite of what ChatGPT would say
-                `dev`: Developer Mode, v2 Developer mode enabled
 
-        - `/private` ChatGPT switch to private mode
-        - `/public` ChatGPT switch to public mode
-        - `/replyall` ChatGPT switch between replyAll mode and default mode
-        - `/reset` Clear ChatGPT conversation history
-        - `/chat-model` Switch different chat model
-                `OFFICIAL`: GPT-3.5 model
-                `UNOFFICIAL`: Website ChatGPT
-                `Bard`: Google Bard model
-                `Bing`: Microsoft Bing model
-""")
+        embed=discord.Embed(title="List of all commands", color=0xee2bde)
+        embed.set_thumbnail(url="https://www.gendarmerie.interieur.gouv.fr/storage/var/gendarmerie_pjgn/storage/images/_aliases/gie_large/9/2/4/0/40429-1-fre-FR/DR.png")
+        embed.add_field(name="`/chat` ", value="Have a chat with ChatGPT", inline=False)
+        embed.add_field(name="`/draw` ", value="Generate an image with the Dalle2 model", inline=False)
+        embed.add_field(name="`/switchpersona` ", value="Switch to a different ChatGPT", inline=False)
+        embed.add_field(name="`/private` ", value="The bot's reply will only be seen by the person who used the command", inline=False)
+        embed.add_field(name="`/public` ", value="The bot will directly reply on the channel", inline=False)
+        embed.add_field(name="`/replyall` ", value="ChatGPT switch between replyAll mode and default mode (bot will reply to all messages in the channel without using slash commands)", inline=False)
+        embed.add_field(name="`/reset` ", value="Clear ChatGPT conversation history", inline=False)
+        embed.add_field(name="`/chat-model` ", value="Switch different chat model", inline=False)
+
+        # Add the footer to the embed
+        requester = interaction.user.name
+        requester_avatar = interaction.user.display_avatar
+        current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+        embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
+
+        await interaction.followup.send(embed=embed)
 
         logger.info(
             "\x1b[31mSomeone needs help!\x1b[0m")
+        
+        
+
+        
+        
 
     @client.tree.command(name="draw", description="Generate an image with the Dalle2 model")
     async def draw(interaction: discord.Interaction, *, prompt: str):
@@ -212,7 +214,6 @@ def run_discord_bot():
         app_commands.Choice(name="Superior Do Anything", value="sda"),
         app_commands.Choice(name="Evil Confidant", value="confidant"),
         app_commands.Choice(name="BasedGPT v2", value="based"),
-        app_commands.Choice(name="OPPO", value="oppo"),
         app_commands.Choice(name="Developer Mode v2", value="dev"),
         app_commands.Choice(name="DUDE V3", value="dude_v3"),
         app_commands.Choice(name="AIM", value="aim"),

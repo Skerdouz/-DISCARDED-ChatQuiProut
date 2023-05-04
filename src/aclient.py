@@ -9,6 +9,7 @@ from Bard import Chatbot as BardChatbot
 from revChatGPT.V3 import Chatbot
 from revChatGPT.V1 import AsyncChatbot
 from EdgeGPT import Chatbot as EdgeChatbot
+from datetime import datetime
 
 logger = log.setup_logger(__name__)
 load_dotenv()
@@ -132,7 +133,7 @@ class aclient(discord.Client):
             elif self.is_replying_all == "True":
                 await message.channel.send(response)
             else:
-                await message.followup.send(response)
+                await message.followup.send(f"{response}")
         except Exception as e:
             if self.is_replying_all == "True":
                 await message.channel.send(f"> **ERROR: Something went wrong, please try again later!** \n ```ERROR MESSAGE: {e}```")
@@ -157,20 +158,27 @@ class aclient(discord.Client):
                         if self.chat_model == "OFFICIAL":
                             response = f"{response}{await responses.official_handle_response(prompt, self)}"
                         elif self.chat_model == "UNOFFICIAL":
+                            embed=discord.Embed(description="Status: Operational ✅", color=0xee2bde)
+                            embed.add_field(name="`/help` ", value="for the commands list :pencil:", inline=False)
+                            embed.add_field(name="`/chat`", value="to start a prompt :incoming_envelope:", inline=True)
+                            embed.add_field(name="`/reset`", value="to clear my memory :wastebasket:", inline=True)
+                            
+                            # Add the footer to the embed
+                            current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+                            embed.set_footer(text=f"{current_time}")  
+
+                            channel = self.get_channel(int(discord_channel_id))
+                            await channel.send(embed=embed)  # Send the embed message
+
                             #response = f"{response}{await responses.unofficial_handle_response(prompt, self)}"
-                            response = """
-**--- --- --- --- --- ---  --- --- --- --- --- --- --- --- ---**
-Statut: Opérationnel :white_check_mark:
-> type `/help` for the commands list :pencil: 
-**--- --- --- --- --- ---  --- --- --- --- --- --- --- --- ---**
-"""
                         elif self.chat_model == "Bard":
                             response = f"{response}{await responses.bard_handle_response(prompt, self)}"
                         elif self.chat_model == "Bing":
                             response = f"{response}{await responses.bing_handle_response(prompt, self)}"
-                        channel = self.get_channel(int(discord_channel_id))
-                        await channel.send(response)
-                        logger.info(f"System prompt response:{response}")
+                        if response:  # Check if the response is not empty
+                            channel = self.get_channel(int(discord_channel_id))
+                            await channel.send(response)
+                            logger.info(f"System prompt response:{response}")
                     else:
                         logger.info("No Channel selected. Skip sending system prompt.")
             else:
