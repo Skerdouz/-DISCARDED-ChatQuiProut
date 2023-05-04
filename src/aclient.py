@@ -157,20 +157,23 @@ class aclient(discord.Client):
                         if self.chat_model == "OFFICIAL":
                             response = f"{response}{await responses.official_handle_response(prompt, self)}"
                         elif self.chat_model == "UNOFFICIAL":
+                            embed=discord.Embed(description="Status: Operational ✅", color=0xee2bde)
+                            embed.add_field(name="`/help` ", value="for the commands list :pencil:", inline=False)
+                            embed.add_field(name="`/chat`", value="to start a prompt :incoming_envelope:", inline=True)
+                            embed.add_field(name="`/reset`", value="to clear my memory :wastebasket:", inline=True)  
+
+                            channel = self.get_channel(int(discord_channel_id))
+                            await channel.send(embed=embed)  # Send the embed message
+
                             #response = f"{response}{await responses.unofficial_handle_response(prompt, self)}"
-                            response = """
-**--- --- --- --- --- ---  --- --- --- --- --- --- --- --- ---**
-Statut: Opérationnel :white_check_mark:
-> type `/help` for the commands list :pencil: 
-**--- --- --- --- --- ---  --- --- --- --- --- --- --- --- ---**
-"""
                         elif self.chat_model == "Bard":
                             response = f"{response}{await responses.bard_handle_response(prompt, self)}"
                         elif self.chat_model == "Bing":
                             response = f"{response}{await responses.bing_handle_response(prompt, self)}"
-                        channel = self.get_channel(int(discord_channel_id))
-                        await channel.send(response)
-                        logger.info(f"System prompt response:{response}")
+                        if response:  # Check if the response is not empty
+                            channel = self.get_channel(int(discord_channel_id))
+                            await channel.send(response)
+                            logger.info(f"System prompt response:{response}")
                     else:
                         logger.info("No Channel selected. Skip sending system prompt.")
             else:
