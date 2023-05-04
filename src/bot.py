@@ -188,9 +188,15 @@ def run_discord_bot():
             path = await art.draw(prompt)
 
             file = discord.File(path, filename="image.png")
-            title = f'> **{prompt}** - <@{str(interaction.user.mention)}' + '> \n\n'
+            title = f'> **prompt:** {prompt} \n\n'
             embed = discord.Embed(title=title)
             embed.set_image(url="attachment://image.png")
+
+            # Add the footer to the embed
+            requester = interaction.user.name
+            requester_avatar = interaction.user.display_avatar
+            current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+            embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
 
             await interaction.followup.send(file=file, embed=embed)
 
