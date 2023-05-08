@@ -6,7 +6,7 @@ from random import randrange
 from src.aclient import client
 from discord import app_commands
 from src import log, art, personas, responses
-from datetime import datetime
+from datetime import datetime, timedelta
 from .views import PineoupasView
 
 logger = log.setup_logger(__name__)
@@ -61,7 +61,11 @@ def run_discord_bot():
             view.message = message
             logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas in ({channel})")
         else:
-            await interaction.followup.send("oups, problème !")
+            current_time = datetime.now()
+            next_hour = (current_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
+            time_remaining = next_hour - current_time
+            await interaction.followup.send(f"API requests limit, please wait `{time_remaining.seconds // 60}min {time_remaining.seconds % 60}secondes`")
+            logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas exceeded - {time_remaining.seconds // 60}m{time_remaining.seconds % 60}s remaining")
 
     @client.tree.command(name="leaderboard", description="Display the users's reputation leaderboard")
     async def leaderboard(interaction: discord.Interaction):
@@ -97,7 +101,7 @@ def run_discord_bot():
             await interaction.followup.send(embed=embed)
             logger.info(f"\x1b[31m{username}\x1b[0m : /leaderboard in ({channel})")
         else:
-            await interaction.followup.send("oups, problème !")
+            await interaction.followup.send(f"oups, problème !")
             
 
     @client.tree.command(name="private", description="Toggle private access")
