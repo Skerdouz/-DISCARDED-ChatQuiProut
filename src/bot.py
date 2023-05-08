@@ -44,28 +44,33 @@ def run_discord_bot():
         username = str(interaction.user)
         channel = str(interaction.channel)
 
-        await interaction.response.defer()
-        image_url = await client.get_woman()
-        if image_url:
-            embed = discord.Embed(title="Tu pine ou tu pine pas ?", color=0xee2bde)
-            embed.set_image(url=image_url)
-            requester = interaction.user.name
-            requester_avatar = interaction.user.display_avatar
-            current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
-            embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
+        try:           
+            image_url = await client.get_woman()
+            
+            if image_url:
+                await interaction.response.defer()
+                embed = discord.Embed(title="Tu pine ou tu pine pas ?", color=0xee2bde)
+                requester = interaction.user.name
+                requester_avatar = interaction.user.display_avatar
+                current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+                embed.set_image(url=image_url)
+                embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
+                user_clicks = {}
+                view = PineoupasView(timeout=12, user_clicks=user_clicks, client=client)
 
-            user_clicks = {}
-            view = PineoupasView(timeout=12, user_clicks=user_clicks, client=client)
+                message = await interaction.followup.send(embed=embed, view=view)
+                view.message = message
+                logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas in ({channel})")
+            else:
+                interaction.response.defer()
 
-            message = await interaction.followup.send(embed=embed, view=view)
-            view.message = message
-            logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas in ({channel})")
-        else:
-            current_time = datetime.now()
-            next_hour = (current_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
-            time_remaining = next_hour - current_time
-            await interaction.followup.send(f"API requests limit, please wait `{time_remaining.seconds // 60}min {time_remaining.seconds % 60}secondes`")
-            logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas exceeded - {time_remaining.seconds // 60}m{time_remaining.seconds % 60}s remaining")
+                current_time = datetime.now()
+                next_hour = (current_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
+                time_remaining = next_hour - current_time
+                await interaction.followup.send(f"API requests limit, please wait `{time_remaining.seconds // 60}min {time_remaining.seconds % 60}secondes`")
+                logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas exceeded - {time_remaining.seconds // 60}m{time_remaining.seconds % 60}s remaining")
+        except discord.errors.NotFound as e:
+            await interaction.followup.send(f'oups, problème: {e}')
 
     @client.tree.command(name="leaderboard", description="Display the users's reputation leaderboard")
     async def leaderboard(interaction: discord.Interaction, user: discord.User = None):

@@ -2,6 +2,7 @@ import os
 import discord
 import asyncio
 import requests
+import random
 from typing import Union
 from src import log, responses
 from dotenv import load_dotenv
@@ -50,6 +51,9 @@ class aclient(discord.Client):
         self.unsplash_access_key = os.getenv("UNSPLASH_ACCESS_KEY")
         self.unsplash_api_url = f'https://api.unsplash.com/photos/random?query=woman-face&client_id={self.unsplash_access_key}'
         self.conn = create_connection()
+        self.pexels_access_key = os.getenv("PEXELS_ACCESS_KEY")
+        self.pexels_api_url = f'https://api.pexels.com/v1/search?query=woman%20face%20photoshoot&page={random.randint(1, 200)}&per_page=1'
+        self.img_api_model = os.getenv("IMAGE_API_MODEL")
 
 
     def get_chatbot_model(self, prompt=prompt) -> Union[AsyncChatbot, Chatbot]:
@@ -197,11 +201,26 @@ class aclient(discord.Client):
             logger.exception(f"Error while sending system prompt: {e}")
 
     async def get_woman(self):
-        response = requests.get(self.unsplash_api_url)
-        if response.status_code == 200:
-            data = response.json()
-            return data['urls']['regular']
+        if self.img_api_model == "UNSPLASH":
+            response = requests.get(self.unsplash_api_url)
+            if response.status_code == 200:
+                data = response.json()
+                return data['urls']['regular']
+            else:
+                return None
+        elif self.img_api_model == "PEXELS":
+            headers = {
+                'Authorization': f'Bearer {self.pexels_access_key}'
+            }
+            response = requests.get(self.pexels_api_url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                return data['photos']['src']['original']
+            else:
+                logger.info('Error response status code')
+                return None
         else:
+            logger.info('Error img model')
             return None
 
     async def get_leaderboard(self):
