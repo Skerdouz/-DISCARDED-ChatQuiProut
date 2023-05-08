@@ -53,9 +53,13 @@ def get_rank(rep):
         elif rep <= 15:
             rank='Rang 3: Protecteur des délices'
         elif rep <= 25:
-            rank='Rang 3: Paladin des escortes'
+            rank='Rang 4: Paladin des escortes'
         elif rep <= 40:
-            rank='Rang 4: Noble défourayeur'
+            rank='Rang 5: Noble défourayeur'
         elif rep <= 60:
-            rank='Rang 6: Seigneur du baisodrôme'
+            rank='Rang 6: Baron du fion'
+        elif rep <= 80:
+            rank='Rang 7: Pineur traditionnel'
+        elif rep <= 115:
+            rank='Rang 8: Seigneur du baisodrôme'
     return rank

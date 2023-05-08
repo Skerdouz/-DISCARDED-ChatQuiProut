@@ -210,4 +210,7 @@ class aclient(discord.Client):
     async def get_rank(self, rep):
         return get_rank(rep)
 
+    async def get_user_count(self, user_id):
+        return get_user_count(self.conn, user_id)
+
 client = aclient()
