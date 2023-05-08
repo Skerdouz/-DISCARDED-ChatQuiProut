@@ -6,7 +6,7 @@ from random import randrange
 from src.aclient import client
 from discord import app_commands
 from src import log, art, personas, responses
-from datetime import datetime
+from datetime import datetime, timedelta
 from .views import PineoupasView
 
 logger = log.setup_logger(__name__)
@@ -55,16 +55,20 @@ def run_discord_bot():
             embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
 
             user_clicks = {}
-            view = PineoupasView(timeout=8, user_clicks=user_clicks, client=client)
+            view = PineoupasView(timeout=12, user_clicks=user_clicks, client=client)
 
             message = await interaction.followup.send(embed=embed, view=view)
             view.message = message
             logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas in ({channel})")
         else:
-            await interaction.followup.send("oups, problème !")
+            current_time = datetime.now()
+            next_hour = (current_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
+            time_remaining = next_hour - current_time
+            await interaction.followup.send(f"API requests limit, please wait `{time_remaining.seconds // 60}min {time_remaining.seconds % 60}secondes`")
+            logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas exceeded - {time_remaining.seconds // 60}m{time_remaining.seconds % 60}s remaining")
 
     @client.tree.command(name="leaderboard", description="Display the users's reputation leaderboard")
-    async def leaderboard(interaction: discord.Interaction):
+    async def leaderboard(interaction: discord.Interaction, user: discord.User = None):
         if interaction.user == client.user:
             return
 
@@ -72,32 +76,55 @@ def run_discord_bot():
         channel = str(interaction.channel)
 
         await interaction.response.defer()
-        result = await client.get_leaderboard()
-        if result:
-            leaderboard_text = ""
-            for idx, row in enumerate(result, start=1):
-                user_id, oui_count, non_count, rep = row
-                rank = await client.get_rank(rep)
-                user = await client.fetch_user(user_id)
-                if idx == 1:
-                    medal = "🥇"
-                elif idx == 2:
-                    medal = "🥈"
-                elif idx == 3:
-                    medal = "🥉"
-                else:
-                    medal = ""
-                leaderboard_text += f"{medal} **{user.name}** •   {rep}rep | oui: {oui_count}, non: {non_count} | {rank}\n"
+        if user is None:
+            result = await client.get_leaderboard()
+            if result:
+                leaderboard_text = ""
+                for idx, row in enumerate(result, start=1):
+                    user_id, oui_count, non_count, rep = row
+                    rank = await client.get_rank(rep)
+                    user = await client.fetch_user(user_id)
+                    if idx == 1:
+                        medal = "🥇"
+                    elif idx == 2:
+                        medal = "🥈"
+                    elif idx == 3:
+                        medal = "🥉"
+                    else:
+                        medal = ""
+                    leaderboard_text += f"{medal} **{user.name}** • • • Réputation: {rep} | {rank}\n"
 
-            embed = discord.Embed(title="Leaderboard of `Tu pine ou tu pine pas ?`", color=0xee2bde, description=leaderboard_text)
+                embed = discord.Embed(title="Leaderboard of `Tu pine ou tu pine pas ?`", color=0xee2bde, description=leaderboard_text)
+                current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+                requester = interaction.user.name
+                requester_avatar = interaction.user.display_avatar
+                embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
+                await interaction.followup.send(embed=embed)
+                logger.info(f"\x1b[31m{username}\x1b[0m : /leaderboard in ({channel})")
+            else:
+                await interaction.followup.send(f"oups, problème result !")
+        else:
+            user_id = user.id
+            oui_count, non_count, rep = await client.get_user_count(user_id)
+            rank = await client.get_rank(rep)
+            
+
+            embed = discord.Embed(title=f"**{user.name}'s statistics**", color=0xee2bde)
+            embed.add_field(name="Reputation", value=f"{rep}", inline=False)
+            embed.add_field(name="Total vote count", value=oui_count+non_count, inline=False)
+            embed.add_field(name="Vote oui", value=oui_count, inline=True)
+            embed.add_field(name="Vote non", value=non_count, inline=True)
+            embed.add_field(name="Rank", value=rank, inline=False)
+
+            embed.set_thumbnail(url=user.display_avatar)
             current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
-            embed.set_footer(text=f"{current_time}")
-
+            requester = interaction.user.name
+            requester_avatar = interaction.user.display_avatar
+            embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
 
             await interaction.followup.send(embed=embed)
             logger.info(f"\x1b[31m{username}\x1b[0m : /leaderboard in ({channel})")
-        else:
-            await interaction.followup.send("oups, problème !")
+
             
 
     @client.tree.command(name="private", description="Toggle private access")
