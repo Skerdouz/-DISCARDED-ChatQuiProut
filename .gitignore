@@ -3,6 +3,7 @@ images/
 
 config.json
 cookies.json
+TODO.txt
 
 .chatgpt_cache.json
 chatgpt_discord_bot.log
