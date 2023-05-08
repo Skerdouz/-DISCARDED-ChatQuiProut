@@ -1,13 +1,16 @@
 import os
 import openai
 import discord
+import requests
 from random import randrange
 from src.aclient import client
 from discord import app_commands
 from src import log, art, personas, responses
 from datetime import datetime
+from .views import PineoupasView
 
 logger = log.setup_logger(__name__)
+
 
 def run_discord_bot():
     @client.event
@@ -33,6 +36,69 @@ def run_discord_bot():
             f"\x1b[31m{username}\x1b[0m : /chat [{message}] in ({channel})")
         await client.enqueue_message(interaction, message)
 
+    @client.tree.command(name="pineoupas", description="Tu pine ou tu pine pas ?")
+    async def pineoupas(interaction: discord.Interaction):
+        if interaction.user == client.user:
+            return
+
+        username = str(interaction.user)
+        channel = str(interaction.channel)
+
+        await interaction.response.defer()
+        image_url = await client.get_woman()
+        if image_url:
+            embed = discord.Embed(title="Tu pine ou tu pine pas ?", color=0xee2bde)
+            embed.set_image(url=image_url)
+            requester = interaction.user.name
+            requester_avatar = interaction.user.display_avatar
+            current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+            embed.set_footer(icon_url=requester_avatar ,text=f"Requested by {requester} • {current_time}")
+
+            user_clicks = {}
+            view = PineoupasView(timeout=8, user_clicks=user_clicks, client=client)
+
+            message = await interaction.followup.send(embed=embed, view=view)
+            view.message = message
+            logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas in ({channel})")
+        else:
+            await interaction.followup.send("oups, problème !")
+
+    @client.tree.command(name="leaderboard", description="Display the users's reputation leaderboard")
+    async def leaderboard(interaction: discord.Interaction):
+        if interaction.user == client.user:
+            return
+
+        username = str(interaction.user)
+        channel = str(interaction.channel)
+
+        await interaction.response.defer()
+        result = await client.get_leaderboard()
+        if result:
+            leaderboard_text = ""
+            for idx, row in enumerate(result, start=1):
+                user_id, oui_count, non_count, rep = row
+                rank = await client.get_rank(rep)
+                user = await client.fetch_user(user_id)
+                if idx == 1:
+                    medal = "🥇"
+                elif idx == 2:
+                    medal = "🥈"
+                elif idx == 3:
+                    medal = "🥉"
+                else:
+                    medal = ""
+                leaderboard_text += f"{medal} **{user.name}** •   {rep}rep | oui: {oui_count}, non: {non_count} | {rank}\n"
+
+            embed = discord.Embed(title="Leaderboard of `Tu pine ou tu pine pas ?`", color=0xee2bde, description=leaderboard_text)
+            current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
+            embed.set_footer(text=f"{current_time}")
+
+
+            await interaction.followup.send(embed=embed)
+            logger.info(f"\x1b[31m{username}\x1b[0m : /leaderboard in ({channel})")
+        else:
+            await interaction.followup.send("oups, problème !")
+            
 
     @client.tree.command(name="private", description="Toggle private access")
     async def private(interaction: discord.Interaction):
@@ -149,6 +215,7 @@ def run_discord_bot():
         embed=discord.Embed(title="List of all commands", color=0xee2bde)
         embed.set_thumbnail(url="https://www.gendarmerie.interieur.gouv.fr/storage/var/gendarmerie_pjgn/storage/images/_aliases/gie_large/9/2/4/0/40429-1-fre-FR/DR.png")
         embed.add_field(name="`/chat` ", value="Have a chat with ChatGPT", inline=False)
+        embed.add_field(name="`/pineoupas` ", value="Choose wisely...", inline=False)
         embed.add_field(name="`/draw` ", value="Generate an image with the Dalle2 model", inline=False)
         embed.add_field(name="`/switchpersona` ", value="Switch to a different ChatGPT", inline=False)
         embed.add_field(name="`/private` ", value="The bot's reply will only be seen by the person who used the command", inline=False)
@@ -157,7 +224,6 @@ def run_discord_bot():
         embed.add_field(name="`/reset` ", value="Clear ChatGPT conversation history", inline=False)
         embed.add_field(name="`/chat-model` ", value="Switch different chat model", inline=False)
 
-        # Add the footer to the embed
         requester = interaction.user.name
         requester_avatar = interaction.user.display_avatar
         current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
@@ -167,11 +233,7 @@ def run_discord_bot():
 
         logger.info(
             "\x1b[31mSomeone needs help!\x1b[0m")
-        
-        
-
-        
-        
+               
 
     @client.tree.command(name="draw", description="Generate an image with the Dalle2 model")
     async def draw(interaction: discord.Interaction, *, prompt: str):
@@ -192,7 +254,6 @@ def run_discord_bot():
             embed = discord.Embed(title=title)
             embed.set_image(url="attachment://image.png")
 
-            # Add the footer to the embed
             requester = interaction.user.name
             requester_avatar = interaction.user.display_avatar
             current_time = datetime.now().strftime("%m-%d-%Y %H:%M")
@@ -200,15 +261,15 @@ def run_discord_bot():
 
             await interaction.followup.send(file=file, embed=embed)
 
-        except openai.InvalidRequestError:
+        except openai.InvalidRequestError as e:
             await interaction.followup.send(
-                "> **ERROR: Inappropriate request 😿**")
+                f"> **ERROR: Inappropriate request 😿** \nDetails: {str(e)}")
             logger.info(
             f"\x1b[31m{username}\x1b[0m made an inappropriate request.!")
 
         except Exception as e:
             await interaction.followup.send(
-                "> **ERROR: Something went wrong 😿**")
+                f"> **ERROR: Something went wrong 😿** \Details: {str(e)}")
             logger.exception(f"Error while generating image: {e}")
 
 

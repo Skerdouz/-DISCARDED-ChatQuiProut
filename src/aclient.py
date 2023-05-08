@@ -1,6 +1,7 @@
 import os
 import discord
 import asyncio
+import requests
 from typing import Union
 from src import log, responses
 from dotenv import load_dotenv
@@ -10,9 +11,14 @@ from revChatGPT.V3 import Chatbot
 from revChatGPT.V1 import AsyncChatbot
 from EdgeGPT import Chatbot as EdgeChatbot
 from datetime import datetime
+from .sql import *
+
 
 logger = log.setup_logger(__name__)
 load_dotenv()
+
+conn = create_connection()
+create_table(conn)
 
 config_dir = os.path.abspath(f"{__file__}/../../")
 prompt_name = 'system_prompt.txt'
@@ -26,7 +32,7 @@ class aclient(discord.Client):
         intents.message_content = True
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
-        self.activity = discord.Activity(type=discord.ActivityType.listening, name="/chat | /help")
+        self.activity = discord.Activity(type=discord.ActivityType.listening, name="/help | /chat")
         self.isPrivate = False
         self.is_replying_all = os.getenv("REPLYING_ALL")
         self.replying_all_discord_channel_id = os.getenv("REPLYING_ALL_DISCORD_CHANNEL_ID")
@@ -41,6 +47,10 @@ class aclient(discord.Client):
         self.chat_model = os.getenv("CHAT_MODEL")
         self.chatbot = self.get_chatbot_model()
         self.message_queue = asyncio.Queue()
+        self.unsplash_access_key = os.getenv("UNSPLASH_ACCESS_KEY")
+        self.unsplash_api_url = f'https://api.unsplash.com/photos/random?query=woman-face&client_id={self.unsplash_access_key}'
+        self.conn = create_connection()
+
 
     def get_chatbot_model(self, prompt=prompt) -> Union[AsyncChatbot, Chatbot]:
         if self.chat_model == "UNOFFICIAL":
@@ -186,5 +196,18 @@ class aclient(discord.Client):
         except Exception as e:
             logger.exception(f"Error while sending system prompt: {e}")
 
+    async def get_woman(self):
+        response = requests.get(self.unsplash_api_url)
+        if response.status_code == 200:
+            data = response.json()
+            return data['urls']['regular']
+        else:
+            return None
+
+    async def get_leaderboard(self):
+        return get_leaderboard(self.conn)
+
+    async def get_rank(self, rep):
+        return get_rank(rep)
 
 client = aclient()
