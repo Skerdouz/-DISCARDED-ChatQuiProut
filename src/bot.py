@@ -46,7 +46,7 @@ def run_discord_bot():
 
         try:           
             image_url = await client.get_woman()
-            
+
             if image_url:
                 await interaction.response.defer()
                 embed = discord.Embed(title="Tu pine ou tu pine pas ?", color=0xee2bde)
@@ -62,7 +62,7 @@ def run_discord_bot():
                 view.message = message
                 logger.info(f"\x1b[31m{username}\x1b[0m : /pineoupas in ({channel})")
             else:
-                interaction.response.defer()
+                await interaction.response.defer()
 
                 current_time = datetime.now()
                 next_hour = (current_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
