@@ -52,7 +52,7 @@ class aclient(discord.Client):
         self.unsplash_api_url = f'https://api.unsplash.com/photos/random?query=woman-face&client_id={self.unsplash_access_key}'
         self.conn = create_connection()
         self.pexels_access_key = os.getenv("PEXELS_ACCESS_KEY")
-        self.pexels_api_url = f'https://api.pexels.com/v1/search?query=woman%20face%20photoshoot&page={random.randint(1, 200)}&per_page=1'
+        self.pexels_api_url = f'https://api.pexels.com/v1/search?query=woman%20face%20photoshoot'
         self.img_api_model = os.getenv("IMAGE_API_MODEL")
 
 
@@ -210,12 +210,12 @@ class aclient(discord.Client):
                 return None
         elif self.img_api_model == "PEXELS":
             headers = {
-                'Authorization': f'Bearer {self.pexels_access_key}'
+                'Authorization': f'{self.pexels_access_key}'
             }
-            response = requests.get(self.pexels_api_url, headers=headers)
+            response = requests.get(f'{self.pexels_api_url}&page={random.randint(1, 100)}&per_page=10', headers=headers)
             if response.status_code == 200:
                 data = response.json()
-                return data['photos']['src']['original']
+                return data['photos'][random.randint(0, 9)]['src']['original']
             else:
                 logger.info('Error response status code')
                 return None
