@@ -33,33 +33,39 @@ def get_leaderboard(conn):
     return result
 
 def get_rank(rep):
-    rank = 'Rang 0: Voyageur Neutre'
+    rank = 'Voyageur neutre'
     if rep < 0: 
         if rep >= -5:
-            rank='Rang -1: Suspect'
+            rank='Suspect'
         elif rep >= -15:
-            rank='Rang -2: Menteur pathologique'
+            rank='Menteur pathologique'
         elif rep >= -25:
-            rank='Rang -3: Mage du scepticisme'
+            rank='Mage du scepticisme'
         elif rep >= -35:
-            rank='Rang -4: Potentiel homosexuel'
-        elif rep >= -45:
-            rank='Rang -5: Archimage gay-pride'
+            rank='Potentiel homosexuel'
+        elif rep >= -55:
+            rank='Archimage gay-pride'
+        elif rep < -55:
+            rank='Asexuel affirmé'
     else:
         if rep <= 5:
-            rank='Rang 1: Observateur'
+            rank='Observateur'
         elif rep <= 10:
-            rank='Rang 2: Chercheur de grâce'
-        elif rep <= 15:
-            rank='Rang 3: Protecteur des délices'
+            rank='Chercheur de grâce'
         elif rep <= 25:
-            rank='Rang 4: Paladin des escortes'
-        elif rep <= 40:
-            rank='Rang 5: Noble défourayeur'
-        elif rep <= 60:
-            rank='Rang 6: Baron du fion'
-        elif rep <= 80:
-            rank='Rang 7: Pineur traditionnel'
-        elif rep <= 115:
-            rank='Rang 8: Seigneur du baisodrôme'
+            rank='Protecteur des délices'
+        elif rep <= 50:
+            rank='Paladin des escortes'
+        elif rep <= 90:
+            rank='Noble défourayeur'
+        elif rep <= 150:
+            rank='Baron du fion'
+        elif rep <= 250:
+            rank='Pineur traditionnel'
+        elif rep <= 350:
+            rank='Seigneur du baisodrôme'
+        elif rep <= 500:
+            rank='Bête affamée'
+        elif rep > 500:
+            rank='Détraqué sexuel'
     return rank
